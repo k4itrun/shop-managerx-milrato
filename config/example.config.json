@@ -1,0 +1,24 @@
+{
+    "token": "TOKEN",
+    "color": "#060606",
+    "prefix": ",",
+    "pastebinapi": "",
+    "secret": "", 
+    "callback": "http://localhost:8080/callback", 
+    "startDashboard": false,
+    "paypal": {
+        "domainName": "paypal.teamarcades.xyz", 
+        "domain": "https://paypal.teamarcades.xyz",     
+        "clientId": "",
+        "clientSecret": ""
+    },
+      "servers": {
+          "6": "127.0.0.1"
+      },
+      "passwords": {
+          "6": "XXXXXXX"
+      },
+      "usernames": {
+          "6": "k4itrun"
+      }
+  }
