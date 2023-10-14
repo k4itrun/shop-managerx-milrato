@@ -1,7 +1,7 @@
 module.exports = {
  apps: [
   {
-   name: "Bot Manager | Team Arcades",
+   name: "Arcades Manager | Team Arcades",
    script: "./index.js",
    watch: true,
    exec_mode: "cluster",

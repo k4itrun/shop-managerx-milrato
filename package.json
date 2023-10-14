@@ -1,7 +1,7 @@
 {
   "name": "arcades-manager",
   "version": "1.0.0",
-  "description": "",
+  "description": "A Discord Bot Manager made by: k4itrun#6889 <3",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
@@ -29,5 +29,35 @@
     "sourcebin": "^4.3.5",
     "ssh2": "^1.10.0",
     "translatte": "^3.0.1"
-  }
+  },
+  "author": "k4itrun#6889",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/k4itrun/shop-managerx-milrato.git"
+  },
+  "keywords": [
+    "lavalink",
+    "music",
+    "discord",
+    "discordjs",
+    "erela.js",
+    "music",
+    "bot",
+    "lava",
+    "lava",
+    "music",
+    "audio",
+    "mp3",
+    "radio",
+    "radiostation",
+    "stream",
+    "premium",
+    "reaction",
+    "reactions"
+  ],
+  "bugs": {
+    "url": "https://github.com/k4itrun/shop-managerx-milrato/issues"
+  },
+  "homepage": "https://teamarcades.xyz"
 }

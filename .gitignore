@@ -1,12 +1,34 @@
-#archives
+# Generated modules and dependencies
 node_modules/
-botManagerConfig/config.json
-modules/dashboard
 
 #db
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
+test.js
 
-#env
+# Log files & json
+package-lock.json
+npm-debug.log
+yarn-error.log
+
+# Backup files
+*.bak
+
+# Build/compile output folder
+dist/
+config/config.json
+dashboard/
+
+# Environment variables
 .env
+
+# Cache
+.cache/
+
+# Local configuration files (e.g., for IDE)
+.vscode/
+.idea/
+
+# Folder for temporary files (e.g., file uploads)
+tmp/

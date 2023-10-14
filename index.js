@@ -1,388 +1,130 @@
-if (process.version.slice(1).split(".")[0] < 16) {
-    throw new Error("This codes require Node v16.9.0 or higher to run!");
-}
-const Discord = require("discord.js");
-const mainconfig = require("./botManagerConfig/mainconfig.js");
+//IMPORTING NPM PACKAGES //
+const Discord = require('discord.js');
+const OS = require('os');
+const Events = require("events");
+const fs = require("fs");
+const Enmap = require("enmap");
+var CronJob = require('cron').CronJob;
+const config = require(`${process.cwd()}/config/config.json`);
+
+require("dotenv").config();
+require("colors");
+
 const client = new Discord.Client({
-    allowedMentions: {
-        parse: ["roles", "users"],
-        repliedUser: false,
-    },
-    failIfNotExists: false,
-    partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
-    intents: [
-        Discord.Intents.FLAGS.GUILDS,
-        Discord.Intents.FLAGS.GUILD_MEMBERS,
-        Discord.Intents.FLAGS.GUILD_VOICE_STATES,
-        Discord.Intents.FLAGS.GUILD_PRESENCES,
-        Discord.Intents.FLAGS.GUILD_MESSAGES,
-        Discord.Intents.FLAGS.DIRECT_MESSAGES,
-    ],
+  fetchAllMembers: false,
+  restTimeOffset: 0,
+  failIfNotExists: false,
+  shards: "auto",
+  allowedMentions: {
+    parse: ["roles", "users"],
+    repliedUser: false,
+  },
+  partials: ['MESSAGE', 'CHANNEL', 'REACTION', 'GUILD_MEMBER', 'USER'],
+  intents: [
+    Discord.Intents.FLAGS.GUILDS,
+    Discord.Intents.FLAGS.GUILD_MEMBERS,
+    Discord.Intents.FLAGS.GUILD_BANS,
+    Discord.Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+    Discord.Intents.FLAGS.GUILD_INTEGRATIONS,
+    Discord.Intents.FLAGS.GUILD_WEBHOOKS,
+    Discord.Intents.FLAGS.GUILD_INVITES,
+    Discord.Intents.FLAGS.GUILD_VOICE_STATES,
+    Discord.Intents.FLAGS.GUILD_PRESENCES,
+    Discord.Intents.FLAGS.GUILD_MESSAGES,
+    Discord.Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+    Discord.Intents.FLAGS.DIRECT_MESSAGES,
+    Discord.Intents.FLAGS.DIRECT_MESSAGE_REACTIONS,
+  ],
 });
 
-client.on("ready", async () => {
-    const ownerId = await client.users.fetch(mainconfig.BotOwnerID).catch(() => null);
-    if (!ownerId) {
-        throw new Error("The BotOwnerID value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    mainconfig.OwnerInformation.OwnerID.forEach(async (ownerIddd) => {
-        const owner = await client.users.fetch(ownerIddd).catch(() => null);
-        if (!owner) {
-            throw new Error("One of the OwnerInformation.OwnerID value you provided in botManagerConfig/mainconfig.js is invalid!");
-        }
-    });
-
-    const guild = await client.guilds.fetch(mainconfig.ServerID).catch(() => null);
-    if (!guild) {
-        throw new Error("The ServerID value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    const memberRoleId = await guild.roles.fetch(mainconfig.MemberRoleID).catch(() => null);
-    if (!memberRoleId) {
-        throw new Error("The Member Role ID value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    mainconfig.AllMemberRoles.forEach(async (memberId) => {
-        const member = await guild.roles.fetch(memberId).catch(() => null);
-        if (!member) {
-            throw new Error("One of the AllMemberRoles value you provided in botManagerConfig/mainconfig.js is invalid!");
-        }
-    });
-
-    const rulesChannel = await guild.channels.fetch(mainconfig.RulesChannel).catch(() => null);
-    if (!rulesChannel) {
-        throw new Error("The RulesChannel value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    const selfRoleChannelId = await guild.channels.fetch(mainconfig.SelfRoleChannelID).catch(() => null);
-    if (!selfRoleChannelId) {
-        throw new Error("The SelfRoleChannelID value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    const botManagerLogs = await guild.channels.fetch(mainconfig.BotManagerLogs).catch(() => null);
-    if (!botManagerLogs) {
-        throw new Error("The BotManagerLogs value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    const boostLogChannel = await guild.channels.fetch(mainconfig.BoostLogChannel).catch(() => null);
-    if (!boostLogChannel) {
-        throw new Error("The BoostLogChannel value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    mainconfig.VaildCats.forEach(async (cat) => {
-        const category = await guild.channels.fetch(cat).catch(() => null);
-        if (!category) {
-            throw new Error("One of the ValidCats value you provided in botManagerConfig/mainconfig.js is invalid!");
-        }
-    });
-
-    const generalChat = await guild.channels.fetch(mainconfig.GeneralChat).catch(() => null);
-    if (!generalChat) {
-        throw new Error("The GeneralChat value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    const ownerTicket = await guild.channels.fetch(mainconfig.OwnerTicket).catch(() => null);
-    if (!ownerTicket) {
-        throw new Error("The OwnerTicket value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    const feedbackChannelId = await guild.channels.fetch(mainconfig.FeedBackChannelID).catch(() => null);
-    if (!feedbackChannelId) {
-        throw new Error("The FeedBackChannelID value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    const finishedOrderId = await guild.channels.fetch(mainconfig.FinishedOrderID).catch(() => null);
-    if (!finishedOrderId) {
-        throw new Error("The FinishedOrderID value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    const autoDeleteChannelID = await guild.channels.fetch(mainconfig.AutoDeleteChannelID).catch(() => null);
-    if (!autoDeleteChannelID) {
-        throw new Error("The AutoDeleteChannelID value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    const donationChannelId = await guild.channels.fetch(mainconfig.DonationChannelID).catch(() => null);
-    if (!donationChannelId) {
-        throw new Error("The DonationChannelID value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    Object.values(mainconfig.LoggingChannelID).forEach(async (channelId) => {
-        const channel = await guild.channels.fetch(channelId).catch(() => null);
-        if (!channel) {
-            throw new Error("One of the LoggingChannelID values you provided in botManagerConfig/mainconfig.js are invalid!");
-        }
-    });
-
-    Object.values(mainconfig.SeverRoles).forEach(async (roleId) => {
-        const role = await guild.roles.fetch(roleId).catch(() => null);
-        if (!role) {
-            throw new Error("One of the SeverRoles values you provided in botManagerConfig/mainconfig.js are invalid!");
-        }
-    });
-
-    const k4itrunTicket = await guild.channels.fetch(mainconfig.OwnerInformation.OwnerTicketCat).catch(() => null);
-    if (!k4itrunTicket) {
-        throw new Error("The OwnerInformation.OwnerTicketCat value you provided in botManagerConfig/mainconfig.js is invalid!");
-    }
-
-    Object.values(mainconfig.OrdersChannelID).forEach(async (id) => {
-        if (id === mainconfig.OrdersChannelID.TicketMessageID) {
-            const channel = await guild.channels.fetch(mainconfig.OrdersChannelID.TicketChannelID).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the OrdersChannelID.TicketMessageID value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.OrdersChannelID.OrderMessageID) {
-            const channel = await guild.channels.fetch(mainconfig.OrdersChannelID.OrderMessageID).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the OrdersChannelID.OrderMessageID value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.OrdersChannelID.ImgTicket) {
-            const channel = await guild.channels.fetch(mainconfig.OrdersChannelID.ImgTicket).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the OrdersChannelID.ImgTicket value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.OrdersChannelID.ImgOrder) {
-            const channel = await guild.channels.fetch(mainconfig.OrdersChannelID.ImgOrder).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the OrdersChannelID.ImgOrder value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.OrdersChannelID.ImgNode) {
-            const channel = await guild.channels.fetch(mainconfig.OrdersChannelID.ImgNode).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the OrdersChannelID.ImgNode value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.OrdersChannelID.ImgRules) {
-            const channel = await guild.channels.fetch(mainconfig.OrdersChannelID.ImgRules).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the OrdersChannelID.ImgRules value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.OrdersChannelID.FeaturesMessageID) {
-            const channel = await guild.channels.fetch(mainconfig.OrdersChannelID.FeaturesMessageID).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the OrdersChannelID.FeaturesMessageID value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        const channel = await guild.channels.fetch(id).catch(() => null);
-        if (!channel) {
-            throw new Error("One of the OrdersChannelID value you provided in botManagerConfig/mainconfig.js is invalid!");
-        }
-    });
-
-    Object.values(mainconfig.SystemRolesMenu).forEach(async (id) => {
-        if (id === mainconfig.SystemRolesMenu.EnglishLanguages) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.EnglishLanguages).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.EnglishLanguages value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.GermanLanguages) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.GermanLanguages).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.GermanLanguages value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.SpanishLanguages) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.SpanishLanguages).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.SpanishLanguages value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.MaleGender) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.MaleGender).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.MaleGender value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.FemaleGender) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.FemaleGender).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.FemaleGender value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.OtherGender) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.OtherGender).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.OtherGender value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-
-        if (id === mainconfig.SystemRolesMenu.NewsPings) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.NewsPings).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.NewsPings value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.PollPings) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.PollPings).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.PollPings value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.ChangesPings) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.ChangesPings).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.ChangesPings value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.DmsOpenState) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.DmsOpenState).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.DmsOpenState value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.DmsAskState) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.DmsAskState).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.DmsAskState value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-        if (id === mainconfig.SystemRolesMenu.DmsClosedState) {
-            const channel = await guild.channels.fetch(mainconfig.SystemRolesMenu.DmsClosedState).catch(() => null);
-            if (!channel) return;
-
-            const msg = channel.messages.fetch(id).catch(() => null);
-            if (!msg) {
-                console.warn("Not a crash! But the SystemRolesMenu.DmsClosedState value you provided in botManagerConfig/mainconfig.js is invalid!");
-            } 
-
-            return;
-        }
-
-
-        const channel = await guild.channels.fetch(id).catch(() => null);
-        if (!channel) {
-            throw new Error("One of the SystemRolesMenu value you provided in botManagerConfig/mainconfig.js is invalid!");
-        }
-    });
-
-    Object.values(mainconfig.ApplyTickets).forEach(async (id) => {
-        const channel = await guild.channels.fetch(id).catch(() => null);
-        if (!channel) {
-            throw new Error("One of the ApplyTickets value you provided in botManagerConfig/mainconfig.js is invalid!");
-        }
-    });
-
-    Object.values(mainconfig.TicketCategorys).forEach(async (id) => {
-        const channel = await guild.channels.fetch(id).catch(() => null);
-        if (!channel) {
-            throw new Error("One of the TicketCategorys value you provided in botManagerConfig/mainconfig.js is invalid!");
-        }
-    });
-});
-
-require("./bot_all_data")(client);
+client.setMaxListeners(0);
+Events.defaultMaxListeners = 0;
+process.env.UV_THREADPOOL_SIZE = OS.cpus().length;
+
+/**
+ * @INFO Create Databases
+ */
+client.bots = new Enmap({ name: "bots", dataDir: `./dbs/bots` });
+client.setups = new Enmap({ name: "setups", dataDir: `./dbs/others` });
+client.staffrank = new Enmap({ name: "staffrank", dataDir: `./dbs/others` });
+client.ticketdata = new Enmap({ name: "ticketdata", dataDir: `./dbs/others` });
+client.payments = new Enmap({ name: "payments", dataDir: `./dbs/payments`});
+client.payments.ensure("payments", { users: [] });
+client.payments.ensure("invitepayments", { users: [] });
+
+client.on("warn", e => console.log(e.stack ? String(e.stack).grey : String(e).grey))
+client.on("debug", e => console.log(e.stack ? String(e.stack).grey : String(e).grey))
+client.on("rateLimit", e => console.log(JSON.stringify(e).grey))
+
+/**
+ *  @INFO Define global variables
+ */
+client.allemojis = require(`${process.cwd()}/config/emoji.json`);
+client.embed = require(`${process.cwd()}/config/embed.json`);
+client.config = require(`${process.cwd()}/config/config.json`);
+client.mainconfig = require(`${process.cwd()}/config/mainconfig.js`);
+/**
+* @INFO Define some global collections
+**/
+client.createingbotmap = new Discord.Collection();
+client.cooldowns = new Discord.Collection();
+client.commands = new Discord.Collection();
+client.aliases = new Discord.Collection();
+client.currentServerIP = String(Object.values(require('os').networkInterfaces()).reduce((r, list) => r.concat(list.reduce((rr, i) => rr.concat(i.family === 'IPv4' && !i.internal && i.address || []), [])), [])).split(".")[3].split(",")[0];
+client.allServers = {
+    current: client.config.servers[client.currentServerIP] ? client.config.servers[client.currentServerIP] : Object.keys(client.config.servers)[0],
+    least: null,
+    stats: [],
+}
+
+/**
+ * @INFO Loading system and Modules
+ */
+async function requirehandlers(){
+  // resolve promise
+  for await (const handler of [
+    "commands", "events", 
+  ]) {
+    try{await require(`./handlers/${handler}`)(client);}catch (e){ console.error(e) }
+  };
+  // assets utils
+  [
+    "checking", // "update", // "updateWithoutSync", 
+  ].forEach(async handler=>{try{ await require(`./utils/handlers/${handler}`)(client); }catch (e){ console.error(e) }});
+  // system shop
+  [
+    "order", "ticket"
+  ].forEach(async handler=>{try{ await require(`./handlers/${handler}`)(client); }catch (e){ console.error(e) }});
+  // handlers
+  [
+    "features", "feedback", "get_least_server", 
+    "guess_the_number", "payment", "roles", 
+    "status_role", "suggest", "ticket_updatemsg", "verify",
+  ].forEach(handler => {try{ require(`./handlers/${handler}`)(client); }catch (e){ console.error(e) }});
+}
+requirehandlers();
+
+/**
+ * @INFO Startings of bot || Loggin the bot
+**/
+client.login(config.token || process.env.token);
+
+
+///////////////////////////////////
+///////////////////////////////////
+///////////////////////////////////
+///////////////////////////////////
+///////////////////////////////////
+
+/**
+ * @INFO Start Dashboard
+ */
+let setup = {};
+if (fs.existsSync("config/config.json")) {
+  const rawData = fs.readFileSync("config/config.json");
+  setup = JSON.parse(rawData);
+}
+if (setup.startDashboard) {require(`${process.cwd()}/dashboard/index`)(client);} else {
+  // console.log('The dashboard will not start according to the configuration.'.bold.yellow);
+  return true;
+}
