@@ -1,0 +1,12 @@
+#archives
+node_modules/
+botManagerConfig/config.json
+modules/dashboard
+
+#db
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+#env
+.env
