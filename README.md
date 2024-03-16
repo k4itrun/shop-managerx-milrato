@@ -1,5 +1,7 @@
 # Arcades Management
 
+🚨 *discontinued*
+
 *Easy to configure, it is only to change each ID of each `channel`, `category`, `emojis`, `roles`, `messages`*
 
 > you can change everything from the folder called **[config](https://github.com/k4itrun/discord-js-arcades-management-official/tree/master/config)**
